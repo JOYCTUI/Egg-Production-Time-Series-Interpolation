@@ -3,10 +3,7 @@
 #==============================================================================#
 
 # Locate script directory
-root_dir <- tryCatch(
-  dirname(normalizePath(sys.frame(1)$ofile)),
-  error = function(e) getwd()
-)
+root_dir <- getwd()
 
 # Main configuration list
 config <- list(
@@ -17,43 +14,40 @@ config <- list(
   root_dir = root_dir,
   
   # Data directories
-  data_dir = file.path(root_dir, "data"),
-  source_data_dir = file.path(root_dir, "data", "source_data"),
-  na_data_dir = file.path(root_dir, "data", "na_data"),
+  data_dir        = file.path("data"),
+  source_data_dir = file.path("data", "source_data"),
+  na_data_dir     = file.path("data", "na_data"),
   
   # Output directories
-  output_dir = file.path(root_dir, "outputs"),
-  filled_data_dir = file.path(root_dir, "outputs", "filled_data_rf"),
-  metrics_dir = file.path(root_dir, "outputs", "evaluation_metrics_rf"),
+  output_dir      = file.path("outputs"),
+  filled_data_dir = file.path("outputs", "filled_data_rf"),
+  metrics_dir     = file.path("outputs", "evaluation_metrics_rf"),
   
   # ==================== File Paths ==================== #
   
   # Data files
-  true_data_file = file.path(root_dir, "data", "source_data", "clean_data.csv"),
-  na_data_parent_dir = file.path(root_dir, "data", "na_data"),
+  true_data_file     = file.path("data", "source_data", "clean_data.csv"),
+  na_data_parent_dir = file.path("data", "na_data"),
   
   # ==================== Experiment Parameters ==================== #
   
   # Missing rate settings
   na_rates = c(0.05, 0.10, 0.15, 0.20),
   
-  # Number of random seeds (for generating test data)
+  # Number of random seeds
   n_seeds = 5,
   
   # ==================== Parameter Settings ==================== #
   
   missforest_params = list(
-    ntree = 200,            # Number of trees
-    maxiter = 10,           # Maximum iterations
-    parallelize = "forests" # Parallelization method
+    ntree = 200,            
+    maxiter = 10,           
+    parallelize = "forests" 
   ),
   
   # ==================== Other Settings ==================== #
   
-  # Random seed
   random_seed = 123,
-  
-  # Whether to show detailed logs
   verbose = TRUE
 )
 
@@ -80,8 +74,5 @@ create_directories <- function() {
 
 # Initialize directories
 create_directories()
-
-# Set working directory
-setwd(config$root_dir)
 
 message("Configuration file loaded successfully")
