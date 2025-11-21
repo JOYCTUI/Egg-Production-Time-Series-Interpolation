@@ -1,50 +1,50 @@
 #==============================================================================#
-#==================== MissForest缺失值插补主程序 ==============================#
+#==================== MissForest Missing Value Imputation Main Program ========#
 #==============================================================================#
-# 作者: Juntu Lan
-# 创建日期: 2025.11.15
+# Author: Juntu Lan
+# Creation Date: 2025.11.15
 #==============================================================================#
 
-# 加载配置和函数
+# Load configuration and functions
 source("config/config.R")
 source("scripts/functions.R")
 
 #==============================================================================#
-#=============================== 主流程 =======================================#
+#=============================== Main Process =================================#
 #==============================================================================#
 
-message("===== 开始缺失值插补流程 =====")
+message("===== Starting Missing Value Imputation Process =====")
 
-# 创建输出目录
+# Create output directories
 dir.create(config$output_filled_dir, showWarnings = FALSE, recursive = TRUE)
 dir.create(config$output_metrics_dir, showWarnings = FALSE, recursive = TRUE)
 
-# 查找种子目录
+# Find seed directories
 seed_dirs <- list.dirs(config$na_data_parent_dir, full.names = FALSE, recursive = FALSE)
 seed_dirs <- seed_dirs[grepl("^seed_\\d+$", seed_dirs)]
 
 if (length(seed_dirs) == 0)
-  stop(sprintf("未找到种子目录: %s", config$na_data_parent_dir))
+  stop(sprintf("No seed directories found: %s", config$na_data_parent_dir))
 
-# 读取原始数据
-message("正在读取原始数据...")
+# Read original data
+message("Reading original data...")
 true_data <- fread(config$true_data_file)
 
-# 执行插补和评估
+# Perform imputation and evaluation
 metrics_summary <- map_dfr(seed_dirs, function(seed_dir) {
   
-  message(sprintf("\n===== 处理种子: %s =====", seed_dir))
+  message(sprintf("\n===== Processing Seed: %s =====", seed_dir))
   
-  # 创建种子特定的输出目录
+  # Create seed-specific output directories
   dir.create(file.path(config$output_filled_dir, seed_dir), recursive = TRUE)
   dir.create(file.path(config$output_metrics_dir, seed_dir), recursive = TRUE)
   
   map_dfr(config$na_rates, function(rate) {
     tryCatch({
       
-      message(sprintf("-- 缺失率: %.2f --", rate))
+      message(sprintf("-- Missing Rate: %.2f --", rate))
       
-      # 文件路径设置
+      # File path settings
       input_file <- file.path(config$na_data_parent_dir, seed_dir,
                               sprintf("na_data_%.2f.csv", rate))
       output_file <- file.path(config$output_filled_dir, seed_dir,
@@ -53,25 +53,25 @@ metrics_summary <- map_dfr(seed_dirs, function(seed_dir) {
                                 sprintf("metrics_%.2f.csv", rate))
       
       if (!file.exists(input_file)) {
-        warning(sprintf("文件不存在: %s", input_file))
+        warning(sprintf("File does not exist: %s", input_file))
         return(NULL)
       }
       
-      # 读取含缺失值的数据
+      # Read data with missing values
       na_data <- fread(input_file)
       
-      # 执行MissForest插补
-      message("开始插补...")
+      # Perform MissForest imputation
+      message("Starting imputation...")
       start_time <- Sys.time()
       filled_data <- rf_impute(na_data, config$missforest_params)
       duration <- as.numeric(difftime(Sys.time(), start_time, units = "secs"))
       
-      # 保存插补结果
+      # Save imputation results
       fwrite(filled_data, output_file)
-      message(sprintf("插补完成，耗时: %.2f秒", duration))
+      message(sprintf("Imputation completed, time taken: %.2f seconds", duration))
       
-      # 计算评估指标
-      message("计算评估指标...")
+      # Calculate evaluation metrics
+      message("Calculating evaluation metrics...")
       num_cols <- 3:ncol(true_data)
       na_mask <- is.na(as.matrix(na_data[, ..num_cols]))
       
@@ -81,10 +81,10 @@ metrics_summary <- map_dfr(seed_dirs, function(seed_dir) {
         na_mask
       )
       
-      # 保存指标
+      # Save metrics
       fwrite(as.data.table(metrics), metrics_file)
       
-      # 返回汇总结果
+      # Return summary results
       return(data.table(
         Seed = seed_dir,
         MissingRate = rate,
@@ -96,7 +96,7 @@ metrics_summary <- map_dfr(seed_dirs, function(seed_dir) {
       ))
       
     }, error = function(e) {
-      message(sprintf("错误 [Seed: %s, Rate: %.2f]: %s",
+      message(sprintf("Error [Seed: %s, Rate: %.2f]: %s",
                       seed_dir, rate, e$message))
       return(NULL)
     })
@@ -104,17 +104,17 @@ metrics_summary <- map_dfr(seed_dirs, function(seed_dir) {
 })
 
 #==============================================================================#
-#=========================== 结果统计与分析 ===================================#
+#=========================== Results Statistics and Analysis ==================#
 #==============================================================================#
 
 if (nrow(metrics_summary) > 0) {
   
-  # 保存详细指标汇总
+  # Save detailed metrics summary
   summary_file <- file.path(config$output_metrics_dir, "summary_metrics.csv")
   fwrite(metrics_summary, summary_file)
-  message(sprintf("详细指标已保存: %s", summary_file))
+  message(sprintf("Detailed metrics saved: %s", summary_file))
   
-  # 生成统计摘要
+  # Generate statistical summary
   stats_summary <- metrics_summary %>%
     group_by(MissingRate) %>%
     summarise(
@@ -134,7 +134,7 @@ if (nrow(metrics_summary) > 0) {
       R2_se = R2_sd / sqrt(n)
     )
   
-  # 格式化输出
+  # Format output
   formatted_stats <- data.frame(
     MissingRate = stats_summary$MissingRate,
     Samples = stats_summary$n,
@@ -146,17 +146,17 @@ if (nrow(metrics_summary) > 0) {
     check.names = FALSE
   )
   
-  # 保存统计摘要
+  # Save statistical summary
   stats_file <- file.path(config$output_metrics_dir, "statistical_summary.csv")
   fwrite(formatted_stats, stats_file)
   
-  # 打印结果
-  message("\n===== 统计摘要 =====")
+  # Print results
+  message("\n===== Statistical Summary =====")
   print(formatted_stats)
-  message(sprintf("统计摘要已保存: %s", stats_file))
+  message(sprintf("Statistical summary saved: %s", stats_file))
   
 } else {
-  message("警告：没有有效的评估结果，请检查数据文件或日志。")
+  message("Warning: No valid evaluation results, please check data files or logs.")
 }
 
-message("\n✅ MissForest缺失值插补流程全部完成!")
+message("\n✅ MissForest missing value imputation process completed!")
