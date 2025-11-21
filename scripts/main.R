@@ -6,8 +6,22 @@
 #==============================================================================#
 
 # Load configuration and functions
-source("config/config.R")
-source("scripts/functions.R")
+if (requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable()) {
+  script_path <- rstudioapi::getActiveDocumentContext()$path
+} else {
+  script_path <- normalizePath(sys.frame(1)$ofile)
+}
+
+script_dir <- dirname(script_path)
+project_root <- dirname(script_dir)
+setwd(project_root)
+
+message("Working directory set to: ", getwd())
+
+source(file.path("config", "config.R"))
+source(file.path("scripts", "functions.R"))
+
+message("Environment dependencies loaded, starting execution...")
 
 #==============================================================================#
 #=============================== Main Process =================================#
