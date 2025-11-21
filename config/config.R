@@ -1,65 +1,65 @@
 #==============================================================================#
-#==================== 项目配置文件 ============================================#
+#==================== Project Configuration File ==============================#
 #==============================================================================#
 
-# 定位脚本所在目录
+# Locate script directory
 root_dir <- tryCatch(
   dirname(normalizePath(sys.frame(1)$ofile)),
   error = function(e) getwd()
 )
 
-# 主配置列表
+# Main configuration list
 config <- list(
   
-  # ==================== 目录设置 ==================== #
+  # ==================== Directory Settings ==================== #
   
-  # 项目根目录
+  # Project root directory
   root_dir = root_dir,
   
-  # 数据目录
+  # Data directories
   data_dir = file.path(root_dir, "data"),
   source_data_dir = file.path(root_dir, "data", "source_data"),
   na_data_dir = file.path(root_dir, "data", "na_data"),
   
-  # 输出目录
+  # Output directories
   output_dir = file.path(root_dir, "outputs"),
   filled_data_dir = file.path(root_dir, "outputs", "filled_data_rf"),
   metrics_dir = file.path(root_dir, "outputs", "evaluation_metrics_rf"),
   
-  # ==================== 文件路径 ==================== #
+  # ==================== File Paths ==================== #
   
-  # 数据文件
+  # Data files
   true_data_file = file.path(root_dir, "data", "source_data", "clean_data.csv"),
   na_data_parent_dir = file.path(root_dir, "data", "na_data"),
   
-  # ==================== 实验参数 ==================== #
+  # ==================== Experiment Parameters ==================== #
   
-  # 缺失率设置
+  # Missing rate settings
   na_rates = c(0.05, 0.10, 0.15, 0.20),
   
-  # 随机种子数量（用于生成测试数据）
+  # Number of random seeds (for generating test data)
   n_seeds = 5,
   
-  # ==================== 参数设置 ==================== #
+  # ==================== Parameter Settings ==================== #
   
   missforest_params = list(
-    ntree = 200,            # 每棵树的数量
-    maxiter = 10,           # 最大迭代次数
-    parallelize = "forests" # 并行方式
+    ntree = 200,            # Number of trees
+    maxiter = 10,           # Maximum iterations
+    parallelize = "forests" # Parallelization method
   ),
   
-  # ==================== 其他设置 ==================== #
+  # ==================== Other Settings ==================== #
   
-  # 随机种子
+  # Random seed
   random_seed = 123,
   
-  # 是否显示详细日志
+  # Whether to show detailed logs
   verbose = TRUE
 )
 
-# ==================== 目录创建 ==================== #
+# ==================== Directory Creation ==================== #
 
-# 确保必要的目录存在
+# Ensure necessary directories exist
 create_directories <- function() {
   dirs_to_create <- c(
     config$source_data_dir,
@@ -72,16 +72,16 @@ create_directories <- function() {
     if (!dir.exists(dir)) {
       dir.create(dir, recursive = TRUE, showWarnings = FALSE)
       if (config$verbose) {
-        message("创建目录: ", dir)
+        message("Created directory: ", dir)
       }
     }
   }
 }
 
-# 初始化目录
+# Initialize directories
 create_directories()
 
-# 设置工作目录
+# Set working directory
 setwd(config$root_dir)
 
-message("配置文件加载完成")
+message("Configuration file loaded successfully")
