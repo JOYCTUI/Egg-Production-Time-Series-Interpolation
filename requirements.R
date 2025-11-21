@@ -1,56 +1,56 @@
 #==============================================================================#
-#==================== 项目依赖包安装脚本 ======================================#
+#==================== Project Dependency Installation Script ==================#
 #==============================================================================#
 
-# 所需包列表
+# Required packages list
 required_packages <- c(
-  # 数据处理
-  "dplyr",      # 数据操作
-  "data.table", # 高效数据读写
-  "tidyr",      # 数据整理
-  "purrr",      # 函数式编程
+  # Data processing
+  "dplyr",      # Data manipulation
+  "data.table", # Efficient data read/write
+  "tidyr",      # Data tidying
+  "purrr",      # Functional programming
   "testthat",
-  # 缺失值插补
+  # Missing value imputation
   "missForest"
 )
 
-# 检查并安装缺失的包
+# Check and install missing packages
 check_and_install <- function(packages) {
-  # 查找未安装的包
+  # Find packages not installed
   new_packages <- packages[!(packages %in% installed.packages()[,"Package"])]
   
-  # 安装缺失的包
+  # Install missing packages
   if(length(new_packages)) {
-    message("正在安装缺失的包: ", paste(new_packages, collapse = ", "))
+    message("Installing missing packages: ", paste(new_packages, collapse = ", "))
     install.packages(new_packages, dependencies = TRUE)
   } else {
-    message("所有所需包已安装。")
+    message("All required packages are already installed.")
   }
 }
 
-# 加载包
+# Load packages
 load_packages <- function(packages) {
   suppressPackageStartupMessages({
     for(package in packages) {
       if(!require(package, character.only = TRUE, quietly = TRUE)) {
-        stop("包加载失败: ", package)
+        stop("Package loading failed: ", package)
       }
     }
   })
-  message("所有包加载成功!")
+  message("All packages loaded successfully!")
 }
 
-# 主流程
-message("=== 检查项目依赖 ===")
+# Main process
+message("=== Checking Project Dependencies ===")
 
-# 安装缺失包
+# Install missing packages
 check_and_install(required_packages)
 
-# 加载包
+# Load packages
 load_packages(required_packages)
 
-# 验证版本
-message("\n=== 包版本信息 ===")
+# Verify versions
+message("\n=== Package Version Information ===")
 for(pkg in required_packages) {
   if(pkg %in% installed.packages()[,"Package"]) {
     version <- packageVersion(pkg)
@@ -58,4 +58,4 @@ for(pkg in required_packages) {
   }
 }
 
-message("\n=== 环境准备完成 ===")
+message("\n=== Environment Preparation Completed ===")
